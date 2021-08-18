@@ -2050,7 +2050,7 @@ PetscErrorCode QPTMatISToBlockDiag(QP qp)
   TRY( ISCreateGeneral(PetscObjectComm((PetscObject)qp),n,idx_l2g,PETSC_COPY_VALUES,&l2g) );
   TRY( ISLocalToGlobalMappingRestoreIndices(mapping,&idx_l2g) );
   TRY( QPFetiSetLocalToGlobalMapping(child,l2g) );
-  TRY( ISOnComm(is_B_global,PETSC_COMM_WORLD,PETSC_COPY_VALUES,&i2g) );
+  TRY( ISOnComm(is_B_global,PetscObjectComm((PetscObject)child),PETSC_COPY_VALUES,&i2g) );
   TRY( ISSort(i2g) );
   TRY( QPFetiSetInterfaceToGlobalMapping(child,i2g) );
 

@@ -328,6 +328,7 @@ PetscErrorCode QPFetiSetUp(QP qp)
   PetscInt nlocaldofs;
   FetiGluingType type = FETI_GLUING_FULL;
   PetscBool exclude_dir = PETSC_FALSE;
+  PetscMPIInt size;
 
   FllopTracedFunctionBegin;
   TRY( QPFetiGetCtx(qp,&ctx) );
@@ -340,6 +341,7 @@ PetscErrorCode QPFetiSetUp(QP qp)
 
   FllopTraceBegin;
   TRY( PetscObjectGetComm((PetscObject)qp,&comm) );
+  TRY( MPI_Comm_size(comm,&size) );
   TRY( PetscLogEventBegin(QP_Feti_SetUp,qp,0,0,0) );
 
   FLLOP_ASSERT(qp->A,"Operator must be specified");
@@ -350,15 +352,18 @@ PetscErrorCode QPFetiSetUp(QP qp)
   TRY( PetscPrintf(comm, "============\n FETI gluing type: %s\n excluding Dirichlet DOFs? %d\n",FetiGluingTypes[type],exclude_dir) );
   TRY( QPFetiAssembleDirichlet(qp) );
   
-  if (!ctx->l2g) FLLOP_SETERRQ(PetscObjectComm((PetscObject)qp),PETSC_ERR_ARG_WRONGSTATE,"L2G mapping must be set first - call QPFetiSetLocalToGlobalMapping before QPFetiSetUp");
-  if (!ctx->i2g) FLLOP_SETERRQ(PetscObjectComm((PetscObject)qp),PETSC_ERR_ARG_WRONGSTATE,"I2G mapping must be set first - call QPFetiSetInterfaceToGlobalMapping before QPFetiSetUp");
-  TRY( QPFetiAssembleGluing(qp, type, exclude_dir, &Bg) );
-  TRY( PetscPrintf(comm, "============\n") );
+  if (size > 1) {
+    if (!ctx->l2g) FLLOP_SETERRQ(PetscObjectComm((PetscObject)qp),PETSC_ERR_ARG_WRONGSTATE,"L2G mapping must be set first - call QPFetiSetLocalToGlobalMapping before QPFetiSetUp");
+    if (!ctx->i2g) FLLOP_SETERRQ(PetscObjectComm((PetscObject)qp),PETSC_ERR_ARG_WRONGSTATE,"I2G mapping must be set first - call QPFetiSetInterfaceToGlobalMapping before QPFetiSetUp");
 
-  TRY( PetscObjectSetName((PetscObject)Bg,"Bg") );
-  TRY( QPAddEq(qp,Bg,NULL) );
-  TRY( MatDestroy(&Bg) );
+    TRY( QPFetiAssembleGluing(qp, type, exclude_dir, &Bg) );
+    TRY( PetscPrintf(comm, "============\n") );
 
+    TRY( PetscObjectSetName((PetscObject)Bg,"Bg") );
+    TRY( QPAddEq(qp,Bg,NULL) );
+    TRY( MatDestroy(&Bg) );
+
+  }
   if (!qp->BE) printf("child (BE) is needed for dualization\n");
   ctx->setupcalled = PETSC_TRUE;
   TRY( PetscLogEventEnd  (QP_Feti_SetUp,qp,0,0,0) );
