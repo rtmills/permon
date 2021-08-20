@@ -10,10 +10,10 @@
 #if PETSC_VERSION_RELEASE
 
 /* TaoType changed from char* to const char* in master */
-#if defined(TaoType)
-#undef TaoType
-#endif
-#define TaoType const char*
+//#if defined(TaoType)
+//#undef TaoType
+//#endif
+//#define TaoType const char*
 
 #endif /* #if PETSC_VERSION_RELEASE */
 
