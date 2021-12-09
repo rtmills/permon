@@ -200,6 +200,7 @@ PetscErrorCode PCCreate_QPTEnforceEqByProjector(PC pc_orig,Mat P,PetscBool symme
   TRY( PetscObjectReference((PetscObject)P) );
   TRY( PetscObjectReference((PetscObject)pc_orig) );
   TRY( MatCreateVecs(P,&ctx->work,NULL) );
+  TRY( VecSetFromOptions(ctx->work) );
 
   TRY( PCCreate(PetscObjectComm((PetscObject)pc_orig),&pc) );
   TRY( PCSetType(pc,PCSHELL) );
@@ -1101,6 +1102,7 @@ PetscErrorCode QPTDualize(QP qp,MatInvType invType,MatRegularizationType regType
 
   /* e = R'*f */
   TRY( MatCreateVecs(R,&e,NULL) );
+  TRY( VecSetFromOptions(e) );
   TRY( MatMultTranspose(R,f,e) );
 
   /* lb(E) = -inf; lb(I) = 0 */
@@ -1350,6 +1352,7 @@ PetscErrorCode QPTRemoveGluingOfDirichletDofs(QP qp)
 
   //TODO use VecGetSubVector with PETSc 3.5+
   TRY( MatCreateVecs(child->BE,NULL,&child->lambda_E) );
+  TRY( VecSetFromOptions(child->lambda_E) );
   TRY( VecInvalidate(child->lambda_E) );
   child->postSolveCtx = (void*) is;
 
@@ -2015,6 +2018,7 @@ PetscErrorCode QPTMatISToBlockDiag(QP qp)
 
     /* Creating work vectors and arrays */
   TRY( VecCreateSeq(PETSC_COMM_SELF,n_B,&vec1_B) );
+  TRY( VecSetFromOptions(vec1_B) );
   TRY( VecDuplicate(vec1_B, &D) );
 
   /* Creating the scatter contexts */
@@ -2029,6 +2033,8 @@ PetscErrorCode QPTMatISToBlockDiag(QP qp)
 
   /* decompose assembled vecs */
   TRY( MatCreateVecs(A,&child->x,&child->b) );
+  TRY( VecSetFromOptions(child->x) );
+  TRY( VecSetFromOptions(child->b) );
   /* assemble b */
   TRY( VecGetLocalVector(child->b,matis->y) );
   TRY( VecDuplicate(qp->b,&b) );

@@ -417,6 +417,7 @@ PetscErrorCode QPPFSetUp(QPPF cp)
   }
 
   TRY( MatCreateVecs(cp->G, PETSC_IGNORE, &(cp->G_left)) );
+  TRY( VecSetFromOptions(cp->G_left) );
   TRY( VecDuplicate(cp->G_left, &(cp->Gt_right)) );
   TRY( VecDuplicate(cp->G_left, &(cp->alpha_tilde)) );
   TRY( VecZeroEntries(cp->alpha_tilde) );

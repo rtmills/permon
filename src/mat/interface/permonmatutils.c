@@ -306,6 +306,7 @@ PetscErrorCode MatCreateOperatorFromUpperTriangular(Mat U, Mat *A)
 
   PetscFunctionBegin;
   TRY( MatCreateVecs(U, NULL, &d) );
+  TRY( VecSetFromOptions(d) );
   TRY( MatGetDiagonal(U, d) );
   TRY( MatCreateDiag(d, &D) );
   TRY( MatScale(D, -1.0) );
@@ -357,8 +358,12 @@ static PetscErrorCode MatMultEqualTol_Private(Mat A,PetscBool transpose,Mat B,Pe
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   if (transpose) {
     ierr = MatCreateVecs(B,&s1,&x);CHKERRQ(ierr);
+    TRY( VecSetFromOptions(s1) );
+    TRY( VecSetFromOptions(x) );
   } else {
     ierr = MatCreateVecs(B,&x,&s1);CHKERRQ(ierr);
+    TRY( VecSetFromOptions(x) );
+    TRY( VecSetFromOptions(s1) );
   }
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
@@ -480,6 +485,7 @@ PetscErrorCode MatGetMaxEigenvalue(Mat A, Vec v, PetscScalar *lambda_out, PetscR
   if (maxits==PETSC_DECIDE || maxits == PETSC_DEFAULT) maxits = 50;
   if (!v) {
     TRY( MatCreateVecs(A,&v,NULL) );
+    TRY( VecSetFromOptions(v) );
     TRY( VecSet(v, 1.0) );
     destroy_v = PETSC_TRUE;
   }
@@ -736,6 +742,7 @@ PetscErrorCode MatGetRowNormalization2(Mat A, Vec *d_new)
 
   PetscFunctionBegin;
   TRY( MatCreateVecs(A,NULL,&d) );
+  TRY( VecSetFromOptions(d) );
   TRY( PermonMatTranspose(A,MAT_TRANSPOSE_EXPLICIT, &At) );
   TRY( MatCreateNormal(At,&AAt) );
   TRY( MatGetDiagonal(AAt,d) );
@@ -777,6 +784,7 @@ PetscErrorCode MatGetRowNormalization(Mat A, Vec *d_new)
 
   PetscFunctionBegin;
   TRY( MatCreateVecs(A,NULL,&d) );
+  TRY( VecSetFromOptions(d) );
   TRY( MatGetSize(A, &M, &N) );
   TRY( MatGetOwnershipRange(A, &ilo, &ihi) );
 
@@ -787,6 +795,7 @@ PetscErrorCode MatGetRowNormalization(Mat A, Vec *d_new)
     TRY( MatRestoreRow(A, i, &ncols, NULL, NULL) );
   }
   TRY( VecCreateSeq(PETSC_COMM_SELF, maxncols, &rv) );
+  TRY( VecSetFromOptions(rv) );
 
   for (i=ilo; i<ihi; i++) {
     /* copy values from the i-th row to the vector rv */
@@ -1201,7 +1210,10 @@ PetscErrorCode MatCheckNullSpace(Mat K,Mat R,PetscReal tol)
   if (K->cmap->n != R->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"non-conforming local size of K and R: %D != %D",K->cmap->n,R->rmap->n);
 
   TRY( MatCreateVecs(K,&d,&y) );
+  TRY( VecSetFromOptions(d) );
+  TRY( VecSetFromOptions(y) );
   TRY( MatCreateVecs(R,&x,NULL) );
+  TRY( VecSetFromOptions(x) );
   TRY( MatGetDiagonal(K,d) );
   TRY( VecNorm(d,NORM_2,&normd) );
   TRY( VecSetRandom(x,NULL) );
@@ -1245,8 +1257,10 @@ PetscErrorCode MatRedistributeRows(Mat mat_from,IS rowperm,PetscInt base,Mat mat
 
   ierr = MatDenseGetArray(mat_from,&arr_from);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m_from*N,arr_from,&v_from);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v_from);CHKERRQ(ierr);
   ierr = MatDenseGetArray(mat_to,&arr_to);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat_to),1,m_to*N,M_to*N,arr_to,&v_to);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v_to);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(m_from*N,&idxx);CHKERRQ(ierr);
   for (i=0; i<m_from; i++) {

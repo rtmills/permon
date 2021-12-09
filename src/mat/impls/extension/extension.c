@@ -261,7 +261,11 @@ static PetscErrorCode MatExtensionSetUp_Extension(Mat TA)
   }
 
   TRY( MatCreateVecs(data->A,&data->cwork,&data->rwork) );
+  TRY( VecSetFromOptions(data->cwork) );
+  TRY( VecSetFromOptions(data->rwork) );
   TRY( MatCreateVecs(TA,&c,&r) );
+  TRY( VecSetFromOptions(c) );
+  TRY( VecSetFromOptions(r) );
   TRY( VecScatterCreate(c,data->cis,data->cwork,NULL,&data->cscatter) );
   TRY( VecScatterCreate(data->rwork,NULL,r,data->ris,&data->rscatter) );
   TRY( VecDestroy(&c) );

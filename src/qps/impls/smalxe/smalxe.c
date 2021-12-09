@@ -812,6 +812,7 @@ PetscErrorCode QPSSetUp_SMALXE(QPS qps)
   /* initialize work vectors */
   TRY( QPSSetWorkVecs(qps,1) );
   TRY( MatCreateVecs(B, NULL, &smalxe->Bu) );
+  TRY( VecSetFromOptions(smalxe->Bu) );
   TRY( VecZeroEntries(qp->lambda_E) );
   TRY( VecZeroEntries(qp->Bt_lambda) );
   

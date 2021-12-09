@@ -58,6 +58,7 @@ static PetscErrorCode MatOrthColumns_Cholesky_Default(Mat A, MatOrthType type, M
 
   if (form == MAT_ORTH_FORM_EXPLICIT && S_new) {
     TRY( MatCreateVecs(A, &v, NULL) );
+    TRY( VecSetFromOptions(v) );
     TRY( VecDuplicateVecs(v, N, &s) );
     TRY( VecGetOwnershipRange(v, &Slo, &Shi) );
     for (i = Slo; i < Shi; i++) {
@@ -75,6 +76,8 @@ static PetscErrorCode MatOrthColumns_Cholesky_Default(Mat A, MatOrthType type, M
   TRY( MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DECIDE, &AtA) );
   TRY( MatSetOption(AtA, MAT_SYMMETRIC, PETSC_TRUE) );
   TRY( MatCreateVecs(AtA, &Arowsol, &Arow) );
+  TRY( VecSetFromOptions(Arowsol) );
+  TRY( VecSetFromOptions(Arow) );
 
   TRY( MatGetOrdering(AtA, MATORDERINGNATURAL, &rperm, &cperm) );
   TRY( MatFactorInfoInitialize(&info) );

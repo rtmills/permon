@@ -56,6 +56,7 @@ PetscErrorCode VecMergeAndDestroy(MPI_Comm comm, Vec *local_in, Vec *global_out)
     TRY( VecGetLocalSize(local, &n) );
   }
   TRY( VecCreateMPI(comm, n, PETSC_DECIDE, &global) );
+  TRY( VecSetFromOptions(global) );
   if (n) {
     PetscScalar *global_arr, *local_arr;
     TRY( VecGetArray(    local,   &local_arr) );
@@ -138,7 +139,8 @@ PetscErrorCode VecCreateFromIS(IS is, Vec *vecout)
   TRY( ISGetSize(is, &N) );
   TRY( VecCreate(PetscObjectComm((PetscObject)is),&vec) );
   TRY( VecSetSizes(vec,n,N) );
-  TRY( VecSetType(vec,VECSTANDARD) );
+//  TRY( VecSetType(vec,VECSTANDARD) );
+  TRY( VecSetFromOptions(vec) );
 
   TRY( ISGetIndices(    is, &ia) );
   TRY( VecGetArray(    vec, &a) );
@@ -172,7 +174,8 @@ PetscErrorCode ISGetVec(IS is, Vec *vec)
   TRY( ISGetBlockSize(is,&bs) );
   TRY( VecSetSizes(*vec,m,M) );
   TRY( VecSetBlockSize(*vec,bs) );
-  TRY( VecSetType(*vec,VECSTANDARD) );
+//  TRY( VecSetType(*vec,VECSTANDARD) );
+  TRY( VecSetFromOptions(*vec) );
   TRY( PetscLayoutReference(is->map,&(*vec)->map) );
   PetscFunctionReturn(0);
 }
@@ -214,7 +217,8 @@ PetscErrorCode ISGetVecBlock(IS is, Vec *vec, PetscInt bs)
   
   TRY( VecSetSizes(*vec,m_vec,M_vec) );
   TRY( VecSetBlockSize(*vec,1) ); /* the block size is 1 */
-  TRY( VecSetType(*vec,VECSTANDARD) );
+//  TRY( VecSetType(*vec,VECSTANDARD) );
+  TRY( VecSetFromOptions(*vec) );
 
   TRY( PetscLayoutReference(is->map,&(*vec)->map) );
   PetscFunctionReturn(0);
@@ -363,6 +367,7 @@ PetscErrorCode   VecGetMPIVector(MPI_Comm comm, PetscInt N,Vec vecs[], Vec *VecO
   TRY( VecCreateNest(PETSC_COMM_SELF, N, NULL, vecs, &locNest) );  
   
   TRY( VecCreateMPI(comm,locNest->map->N,PETSC_DECIDE,&glVec) );
+  TRY( VecSetFromOptions(glVec) );
   TRY( ISCreateStride(comm,locNest->map->N,0,1,&isl) );
   TRY( ISCreateStride(comm,locNest->map->N,glVec->map->rstart,1,&isg) );
   TRY( VecScatterCreate(locNest,isl,glVec,isg,&sc) );
@@ -443,6 +448,7 @@ PetscErrorCode VecNestGetMPI(PetscInt N,Vec *vecs[])
   TRY( PetscNew(&ctx) );
 
   TRY( VecCreateMPI(comm,x->map->n,x->map->N,&y) );
+  TRY( VecSetFromOptions(y) );
   TRY( VecDuplicateVecs(y,N,&mpiv) );
   TRY( VecDestroy(&y) );
   y=mpiv[0];

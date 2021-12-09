@@ -114,6 +114,8 @@ static PetscErrorCode PCSetUp_Dual(PC pc)
     ctx->C_bb = K;
     TRY( PetscObjectReference((PetscObject)K) );
     TRY( MatCreateVecs(ctx->C_bb,&ctx->xwork,&ctx->ywork) );
+    TRY( VecSetFromOptions(ctx->xwork) );
+    TRY( VecSetFromOptions(ctx->ywork) );
   }
   PetscFunctionReturn(0);
 }

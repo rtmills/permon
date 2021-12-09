@@ -18,6 +18,7 @@ PetscErrorCode MatGetColumnVectors_DensePermon(Mat A, Vec *cols_new[])
   PetscFunctionBegin;
   N = A->cmap->N;
   TRY( MatCreateVecs(A, PETSC_IGNORE, &d) );
+  TRY( VecSetFromOptions(d) );
   TRY( VecDuplicateVecs(d, N, &cols) );
   TRY( VecDestroy(&d) );
 

@@ -277,6 +277,7 @@ PetscErrorCode QPFetiAssembleDirichlet(QP qp)
 
     TRY( PetscLogEventBegin(QP_AddEq,qp,0,0,0) );
     TRY( MatCreateVecs(B,NULL,&c) );
+    TRY( VecSetFromOptions(c) );
     TRY( MatMult(B,qp->x,c) );
     TRY( QPAddEq(qp, B, c));
     TRY( PetscLogEventEnd(QP_AddEq,qp,0,0,0) );
@@ -302,6 +303,7 @@ PetscErrorCode QPFetiAssembleDirichlet(QP qp)
 
     /* alpha=max(abs(diag(A)) */
     TRY( MatCreateVecs(qp->A,NULL,&d) );
+    TRY( VecSetFromOptions(d) );
     TRY( MatGetDiagonal(qp->A,d) );
     TRY( VecAbs(d) );
     TRY( VecMax(d,NULL,&alpha) );

@@ -285,6 +285,7 @@ static PetscErrorCode MatMatMult_BlockDiag_AIJ(Mat A, Mat B, PetscReal fill, Mat
   TRY( MatDestroy(&B_loc) );
 
   TRY( MatCreateVecs(B, &x, NULL) );
+  TRY( VecSetFromOptions(x) );
   TRY( MatMergeAndDestroy(comm, &C_loc, x, C) );
   TRY( VecDestroy(&x) );
   PetscFunctionReturn(0);
@@ -328,6 +329,7 @@ static PetscErrorCode MatTransposeMatMult_BlockDiag_AIJ(Mat A, Mat B, PetscReal 
   TRY( MatDestroy(&B_loc) );
 
   TRY( MatCreateVecs(B, &x, NULL) );
+  TRY( VecSetFromOptions(x) );
   TRY( MatMergeAndDestroy(comm, &C_loc, x, C) );
   TRY( VecDestroy(&x) );
   PetscFunctionReturn(0);
@@ -643,6 +645,7 @@ static PetscErrorCode MatGetColumnVectors_BlockDiag(Mat mat, Vec *cols_new[])
   FLLOP_ASSERT(n==n1,"n==n1");
 
   TRY( MatCreateVecs(mat, PETSC_IGNORE, &d) );
+  TRY( VecSetFromOptions(d) );
   TRY( VecDuplicateVecs(d, N, &cols) );
   TRY( VecDestroy(&d) );
 
@@ -792,6 +795,8 @@ PetscErrorCode MatCreateBlockDiag(MPI_Comm comm, Mat block, Mat *B_new) {
   
   /* Intermediate vectors for MatMult. */
   TRY( MatCreateVecs(block, &data->xloc, &data->yloc) );
+  TRY( VecSetFromOptions(data->xloc) );
+  TRY( VecSetFromOptions(data->yloc) );
   TRY( VecDuplicate(data->yloc, &data->yloc1));
   TRY( VecDuplicate(data->xloc, &data->xloc1));
 

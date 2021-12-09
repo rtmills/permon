@@ -70,6 +70,7 @@ PetscErrorCode MatCompleteCtxCreate(Mat A, MatCompleteCtx *ctxout)
   ctx->multtransposeadd = A->ops->multtransposeadd;
   ctx->duplicate        = A->ops->duplicate;
   TRY( MatCreateVecs(A, NULL, &ctx->d) );
+  TRY( VecSetFromOptions(ctx->d) );
   TRY( MatGetDiagonal(A, ctx->d) );
   *ctxout = ctx;
   PetscFunctionReturn(0);

@@ -615,6 +615,8 @@ static PetscErrorCode MatInvExplicitly_Private(KSP ksp, Mat imat_explicit)
 
   /* col_I is a j-th column of eye(M) */
   TRY( MatCreateVecs(A, &col_imat, &col_I) );
+  TRY( VecSetFromOptions(col_imat) );
+  TRY( VecSetFromOptions(col_I) );
   TRY( VecZeroEntries(col_I) );
   for (i = 0; i < M; i++) {
     if (i >= ilo && i < ihi) TRY( VecSetValue(col_I, i, 1, INSERT_VALUES) );
@@ -653,6 +655,8 @@ static PetscErrorCode MatInvExplicitlyTranspose_Private(PetscInt ilo, PetscInt i
 
   /* col_I is a j-th column of eye(M) */
   TRY( MatCreateVecs(A, &col_I, &row_imat) );
+  TRY( VecSetFromOptions(col_I) );
+  TRY( VecSetFromOptions(row_imat) );
   TRY( VecZeroEntries(col_I) );
   for (i = ilo; i < ihi; i++) {
     TRY( VecSetValue(col_I, i, 1, INSERT_VALUES) );

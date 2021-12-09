@@ -312,6 +312,7 @@ static PetscErrorCode MatNestPermonGetVecs_NestPermon(Mat A,Vec *right,Vec *left
       for (j=0; j<bA->nc; j++) {
         if (bA->m[i][j]) {
           ierr = MatCreateVecs(bA->m[i][j],NULL,&L[i]);CHKERRQ(ierr);
+          ierr = VecSetFromOptions(L[i]);CHKERRQ(ierr);
           break;
         }
       }
@@ -415,6 +416,8 @@ PetscErrorCode MatNestPermonGetVecs(Mat A,Vec *x,Vec *y)
   TRY( PetscObjectQueryFunction((PetscObject)A,"MatNestPermonGetVecs_C",&f) );
   if (!f) f = MatCreateVecs;
   TRY( (*f)(A,x,y) );
+  TRY( VecSetFromOptions(*x) );
+  TRY( VecSetFromOptions(*y) );
   PetscFunctionReturn(0);
 }
 

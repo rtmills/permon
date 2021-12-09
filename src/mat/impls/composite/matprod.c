@@ -58,6 +58,7 @@ PetscErrorCode MatMult_Prod(Mat A,Vec x,Vec y)
   while (next->next) {
     if (!next->work) { /* should reuse previous work if the same size */
       ierr = MatCreateVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(next->work);CHKERRQ(ierr);
     }
     out = next->work;
     ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
@@ -94,6 +95,7 @@ PetscErrorCode MatMultTranspose_Prod(Mat A,Vec x,Vec y)
   while (tail->prev) {
     if (!tail->prev->work) { /* should reuse previous work if the same size */
       ierr = MatCreateVecs(tail->mat,&tail->prev->work,NULL);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(tail->prev->work);CHKERRQ(ierr);
     }
     out = tail->prev->work;
     ierr = MatMultTranspose(tail->mat,in,out);CHKERRQ(ierr);

@@ -30,6 +30,7 @@ static PetscErrorCode QPInitializeInitialVector_Private(QP qp)
   if (!qp->parent) {
     /* if no initial guess exists, just set it to a zero vector */
     TRY( MatCreateVecs(qp->A,&qp->x,NULL) );
+    TRY( VecSetFromOptions(qp->x) );
     TRY( VecZeroEntries(qp->x) ); // TODO: is it in the feasible set?
     PetscFunctionReturn(0);
   }
@@ -305,6 +306,7 @@ PetscErrorCode QPViewKKT(QP qp,PetscViewer v)
   if (BE) {
     if (BE->ops->mult) {
       TRY( MatCreateVecs(BE, NULL, &r) );
+      TRY( VecSetFromOptions(r) );
       TRY( MatMult(BE, x, r) );
       if (cE) TRY( VecAXPY(r, -1.0, cE) );
       TRY( VecNorm(r, NORM_2, &norm) );
@@ -519,6 +521,7 @@ PetscErrorCode QPSetUpInnerObjects(QP qp)
 
   if (qp->BE && !qp->lambda_E) {
     TRY( MatCreateVecs(qp->BE,NULL,&qp->lambda_E) );
+    TRY( VecSetFromOptions(qp->lambda_E) );
     TRY( VecInvalidate(qp->lambda_E) );
   }
   if (!qp->BE) {
@@ -527,6 +530,7 @@ PetscErrorCode QPSetUpInnerObjects(QP qp)
 
   if (qp->BI && !qp->lambda_I) {
     TRY( MatCreateVecs(qp->BI,NULL,&qp->lambda_I) );
+    TRY( VecSetFromOptions(qp->lambda_I) );
     TRY( VecInvalidate(qp->lambda_I) );
   }
   if (!qp->BI) {
@@ -552,6 +556,7 @@ PetscErrorCode QPSetUpInnerObjects(QP qp)
       TRY( PetscObjectReference((PetscObject)(cs[0]     = qp->cE)) );
     } else {
       TRY( MatCreateVecs(Bs[0],NULL,&cs[0]) );
+      TRY( VecSetFromOptions(cs[0]) );
       TRY( VecSet(cs[0],0.0) );
     }
     
@@ -561,11 +566,13 @@ PetscErrorCode QPSetUpInnerObjects(QP qp)
       TRY( PetscObjectReference((PetscObject)(cs[1]     = qp->cI)) );
     } else {
       TRY( MatCreateVecs(Bs[1],NULL,&cs[1]) );
+      TRY( VecSetFromOptions(cs[1]) );
       TRY( VecSet(cs[1],0.0) );
     }
     
     TRY( MatCreateNestPermon(comm,2,NULL,1,NULL,Bs,&qp->B) );
     TRY( MatCreateVecs(qp->B,NULL,&qp->c) );
+    TRY( VecSetFromOptions(qp->c) );
     TRY( PetscObjectSetName((PetscObject)qp->B,"B") );
     TRY( PetscObjectSetName((PetscObject)qp->c,"c") );
     
@@ -587,12 +594,14 @@ PetscErrorCode QPSetUpInnerObjects(QP qp)
 
   if (qp->B && !qp->lambda) {
     TRY( MatCreateVecs(qp->B,NULL,&qp->lambda) );
+    TRY( VecSetFromOptions(qp->lambda) );
     TRY( PetscObjectSetName((PetscObject)qp->lambda,"lambda") );
     TRY( VecInvalidate(qp->lambda) );
   }
 
   if (qp->B && !qp->Bt_lambda) {
     TRY( MatCreateVecs(qp->B,&qp->Bt_lambda,NULL) );
+    TRY( VecSetFromOptions(qp->Bt_lambda) );
     TRY( PetscObjectSetName((PetscObject)qp->lambda,"Bt_lambda") );
     TRY( VecInvalidate(qp->Bt_lambda) );
   }
@@ -660,6 +669,7 @@ PetscErrorCode QPCompute_BEt_lambda(QP qp,Vec *BEt_lambda)
     TRY( VecIsInvalidated(qp->lambda,&flg) );
     if (!flg && qp->B->ops->multtranspose) {
       TRY( MatCreateVecs(qp->B, BEt_lambda, NULL) );
+      TRY( VecSetFromOptions(*BEt_lambda) );
       TRY( MatMultTranspose(qp->B, qp->lambda, *BEt_lambda) );                  /* BEt_lambda = B'*lambda */
       PetscFunctionReturn(0);
     }
@@ -668,6 +678,7 @@ PetscErrorCode QPCompute_BEt_lambda(QP qp,Vec *BEt_lambda)
   TRY( VecIsInvalidated(qp->lambda_E,&flg) );
   if (!flg || !qp->BE->ops->multtranspose) {
     TRY( MatCreateVecs(qp->BE, BEt_lambda, NULL) );
+    TRY( VecSetFromOptions(*BEt_lambda) );
     TRY( MatMultTranspose(qp->BE, qp->lambda_E, *BEt_lambda) );                 /* Bt_lambda = BE'*lambda_E */
   }
   PetscFunctionReturn(0);
@@ -1624,11 +1635,13 @@ PetscErrorCode QPAddEq(QP qp, Mat Beq, Vec ceq)
     } else {
       for (i = 0; i<M; i++) {
         TRY( MatCreateVecs(subBE[i], NULL, &subCE[i]) );
+        TRY( VecSetFromOptions(subCE[i]) );
         TRY( VecSet(subCE[i], 0.0) );
       }
     }
     if (!ceq) {
       TRY( MatCreateVecs(Beq, NULL, &ceq) );
+      TRY( VecSetFromOptions(ceq) );
       TRY( VecSet(ceq, 0.0) );
     }
     subCE[M] = ceq;
@@ -1690,14 +1703,18 @@ PetscErrorCode QPGetEqMultiplicityScaling(QP qp, Vec *dE_new, Vec *dI_new)
 
   {
     TRY( MatCreateVecs(Bg,&dof_multiplicities,&edge_multiplicities_g) );
+    TRY( VecSetFromOptions(dof_multiplicities) );
+    TRY( VecSetFromOptions(edge_multiplicities_g) );
     TRY( VecSet(dof_multiplicities,   1.0) );
   }
   if (scale_Bd) {
     TRY( MatCreateVecs(Bd,NULL,&edge_multiplicities_d) );
+    TRY( VecSetFromOptions(edge_multiplicities_d) );
     TRY( VecSet(edge_multiplicities_d,1.0) );
   }
   if (scale_Bc) {
     TRY( MatCreateVecs(Bc,NULL,&edge_multiplicities_c) );
+    TRY( VecSetFromOptions(edge_multiplicities_c) );
     TRY( VecSet(edge_multiplicities_c,1.0) );
   }
 
@@ -2105,6 +2122,12 @@ PetscErrorCode QPGetVecs(QP qp,Vec *right,Vec *left)
   PetscValidType(qp,1);
   if (qp->A) {
     TRY( MatCreateVecs(qp->A,right,left) );
+    if (right) {
+      TRY( VecSetFromOptions(*right) );
+    }
+    if (left) {
+      TRY( VecSetFromOptions(*left) );
+    }
   } else {
     FLLOP_SETERRQ(((PetscObject)qp)->comm,PETSC_ERR_ORDER,"system operator not set yet");
   }

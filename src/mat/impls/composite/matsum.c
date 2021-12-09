@@ -62,6 +62,7 @@ PetscErrorCode MatMult_Sum(Mat A,Vec x,Vec y)
     } else {
       if (!next->work) { /* should reuse previous work if the same size */
         ierr = MatCreateVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
+        ierr = VecSetFromOptions(next->work);CHKERRQ(ierr);
       }
       out = next->work;
       ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
